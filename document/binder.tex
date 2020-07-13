@@ -1,0 +1,629 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%							MONASH UNIVERSITY CODE BINDER
+%%% ----------------------------------------------------------------------------
+%%%	 Author(s): Daniel Anderson, Peter Whalan, Xin Wei Chow, Ryan Hechenberger
+%%%
+%%%  Usage: Compile with your favourite LaTeX build system. You'll need to
+%%%			build twice for the table of contents to correctly update.
+%%%         You will also need to have the python script 'pygments' installed
+%%%         for syntax colouring. The pygments style 'style.py' will need to be
+%%%         symlinked from your pygments style directory called monash.py. This
+%%%			can be done using the setup script "setup.sh"
+%%%
+%%%  Instructions for adding code to the booklet:
+%%%
+%%% 	1. Make sure you have the most up-to-date version from Bitbucket
+%%% 	2. Ensure that your code is up-to-date on Bitbucket
+%%%		3. Include line-markers in your source to tell LaTeX what to include.
+%%%		   Follow the formatting shown in the example below:
+%%%
+%%%			//listings:sorting_code
+%%%			void insertion_sort(vi& a) {
+%%%				for (int i = 1; i < (int)a.size(); i++) {
+%%%					int j = i;
+%%%					while (j > 0 && a[j-1] > a[j])
+%%%						swap(a[j], a[--j]);
+%%%				}
+%%%			}
+%%%			//listings:/sorting_code
+%%%
+%%%		   Note that you may have multiple markers in one file so that you
+%%%		   may include multiple parts of the same file in different places.
+%%%
+%%%		4. Find the relevant section of the code binder and add the LaTeX:
+%%%
+%%%			\algo{filename.cpp}{line_marker}{Title of Algorithm}
+%%%
+%%%		   If you don't want the title in the table of contents, use \algo*.
+%%%		   line_marker is the marker indicated in step 3. For example:
+%%%
+%%%			\algo{insertion_sort.cpp}{sorting_code}{Insertion Sort}
+%%%
+%%%		   would include the code snippet shown in step 3.
+%%%
+%%%  Preferably only include highly reliable thoroughly tested code. If code has
+%%%  not been thoroughly tested it should be indicated in a LaTeX comment that
+%%%  the code still requires further testing.
+%%%
+%%%  The absolute line length limit for code is about 90, but try to stick to
+%%%  about 80 unless there is a good reason to do otherwise.
+%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\documentclass[a4paper,twocolumn]{article}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage[english]{babel}
+\usepackage[scaled]{beramono}
+\usepackage{color}
+\usepackage{comment}
+\usepackage[a4paper, landscape, twoside, left=8mm, right=8mm, bottom=5mm, headsep=0mm,top=15mm]{geometry}
+\usepackage{fancyhdr}
+\usepackage{anyfontsize}
+\usepackage[T1]{fontenc}
+\usepackage{graphbox}
+\usepackage{graphicx}
+\usepackage[utf8x]{inputenc}
+\usepackage{listings}
+\usepackage{longtable}
+\usepackage[cache=false]{minted}
+\usepackage{multirow}
+\usepackage{mwe}
+\usepackage{parskip}
+\usepackage{suffix}
+\usepackage{tabto}
+\usepackage{tabularx}
+\usepackage{titlesec}
+\usepackage{titletoc}
+\usepackage{titling}
+\usepackage[titles]{tocloft}
+\usepackage{xcolor}
+
+\graphicspath{{./img/}}
+
+% Remove Table of contents header and move it up
+\makeatletter
+\renewcommand\tableofcontents{%
+	\@starttoc{toc}%
+}
+\makeatother
+
+% Stirling number notation
+\newcommand{\stirling}[2]{{#1 \brack #2}}
+\newcommand{\stirlingtwo}[2]{{#1 \brace #2}}
+\DeclareRobustCommand{\eulerian}{\genfrac<>{0pt}{}}
+\newcommand{\euleriantwo}[2]{\left\langle\!\!\left\langle #1\atop  #2\right\rangle\!\!\right\rangle}
+
+% Monash logo
+\newcommand{\monash}{\includegraphics[scale=0.075, align=c]{monash}}
+
+% Move title up
+\setlength{\droptitle}{-1.75ex}
+
+% Nice rule
+\newcommand\disappearingrule{%
+	\par % make sure we end a paragraph
+	\vskip5pt % space above the rule
+	\leaders\vrule width 0.4934\textwidth\vskip0.4pt % rule thickness is 0.4pt
+	\nointerlineskip % disable interline glue here
+	\vskip2pt % space below the rule
+}
+
+% Spacing before section headers
+\titlespacing*{\section}
+{0pt}{0px}{0px}
+\titleformat{\section}
+{\normalfont\fontsize{10}{10}\bfseries}{\thesection}{1em}{}
+
+% Page headers
+\pagestyle{fancy}
+\renewcommand{\headrulewidth}{0pt}
+\fancyhead[RE,RO]{\bfseries Page \thepage}
+\fancyhead[LO,LE]{\monash\ \bfseries Monash University}
+\fancyhead[CE,CO]{\bfseries Team Reference Document}
+%\fancyhead[C]{\bfseries Section \leftmark}
+\fancyfoot{}
+
+\definecolor{mygray}{rgb}{0.98, 0.98, 0.98}
+\definecolor{theWhite}{gray}{0.9}
+\definecolor{theBlack}{gray}{0.0}
+
+\usemintedstyle{monash}
+
+% Including code
+% \algo includes the algorithm in the table of contents
+% \algo* omits the entry from the table of contents.
+\newcommand{\mintedrange}[2]{
+	\immediate\write18{python3 minted_delim.py "#1" "//listings:#2" "//listings:/#2"}%
+	\inputminted[
+		fontsize=\scriptsize,
+		tabsize=2
+	]{cpp_lexer.py:CppLexerMod -x}{snippet.tmp} % Spooky hack to use custom lexer
+}
+
+\newcommand\algo[3]{%
+	\addcontentsline{toc}{subsection}{#3}
+	\mintedrange{#1}{#2}
+}
+
+\WithSuffix\newcommand\algo*[3]{%
+	\mintedrange{#1}{#2}
+}
+
+% Fourth level of ToC
+\setcounter{secnumdepth}{4}
+\titleformat{\paragraph}
+{\normalfont\normalsize\bfseries}{\theparagraph}{1em}{}
+\titlespacing*{\paragraph}
+{0pt}{3.25ex plus 1ex minus .2ex}{1.5ex plus .2ex}
+
+% Title
+\title{\Huge{\bfseries Monash University Team Reference Document} \vspace{-1.75ex}}
+\author{}
+\date{}
+
+% Column separator
+\setlength{\columnseprule}{1pt}
+
+% Table headers
+\newcolumntype{Y}{>{\centering\arraybackslash}X}
+
+\begin{document}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%					TITLE PAGE AND TABLE OF CONTENTS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\pagenumbering{arabic}
+\pretitle{%
+\begin{center}
+	\LARGE
+	\includegraphics[scale=0.25, align=c]{monash} \hspace{1em}
+}
+
+\posttitle{
+	\hspace{1em} \includegraphics[scale=0.25, align=c]{icpc}
+	\end{center}	
+}
+
+\maketitle
+\thispagestyle{fancy}
+
+{\footnotesize \tableofcontents}
+\newpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%					RUN SCRIPT AND CODE TEMPLATE
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{preparation.tex}
+
+% Tell LaTeX to not stretch shit
+\raggedbottom
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%							GEOMETRY
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Geometry}
+
+%%% Daniel's Geometry.
+%\algo{"../dev/Daniel/geometry/geometry.cpp"}{point}{2D Computational Geometry}
+%\algo*{"../dev/Daniel/geometry/geometry.cpp"}{line}{Line geometry}
+%\algo*{"../dev/Daniel/geometry/geometry.cpp"}{segment}{Line Segment geometry}
+%\algo*{"../dev/Daniel/geometry/geometry.cpp"}{circle}{Circle geometry}
+%\algo*{"../dev/Daniel/geometry/geometry.cpp"}{polygon}{Polygon geometry}
+
+% Peter's Geometry.
+\algo{"../unofficial/Geometry/geometry_2d.cpp"}{geometry}{2D Computational Geometry}
+\algo{"../unofficial/Geometry/geometry_3d.cpp"}{point}{3D Computational Geometry}
+\algo*{"../unofficial/Geometry/geometry_3d.cpp"}{geometry}{3D Computational Geometry}
+\algo{"../unofficial/Geometry/geometry_3d.cpp"}{dt}{Delauney Triangulation}
+\algo{"../unofficial/Geometry/geometry_3d.cpp"}{great_circle}{Great Circle Distance}
+\algo{"../unofficial/Geometry/integer_geometry.cpp"}{geometry}{Integer Computational Geometry}
+
+% Reliability 3
+\algo{"../dev/Whalanator/Geometry/AreaOfUnionOfRectangles2.cpp"}{union_of_rect}{Area of Union of Rectangles}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%							NUMBER THEORY
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Number Theory}
+
+\algo*{"../official/number-theory/number-theory.cpp"}{int128}{128-bit Integer}
+
+%%% Tested
+\algo*{"../official/number-theory/number-theory.cpp"}{expmod}{Binary Exponentiation}
+
+%%% Tested
+\algo{"../official/number-theory/number-theory.cpp"}{euclidean}{Extended Euclidean Algorithm}
+
+%%% Tested
+\algo{"../official/number-theory/number-theory.cpp"}{inverse}{Modular Multiplicative Inverse}
+
+%%% Tested
+\algo{"../official/number-theory/number-theory.cpp"}{cra}{Chinese Remainder Algorithm}
+
+%%% Tested
+\algo{"../official/number-theory/number-theory.cpp"}{phi}{Euler's Totient Function}
+
+%%% Tested
+\algo{"../official/number-theory/number-theory.cpp"}{sieve}{Sieve of Eratosthenes}
+
+%%% Tested
+\algo*{"../official/number-theory/number-theory.cpp"}{mr_seeds}{Millar-Rabin}
+
+%%% Tested
+\algo{"../official/number-theory/number-theory.cpp"}{prime_test}{Primality Testing}
+
+%%% Tested
+\algo{"../official/number-theory/number-theory.cpp"}{factorise}{Prime Factorisation}
+
+%%% Tested
+\algo{"../official/number-theory/number-theory.cpp"}{primitive_root}{Primitive Roots}
+
+%%% Tested
+\algo{"../official/number-theory/number-theory.cpp"}{discrete_root}{Discrete Roots}
+
+%%% Tested
+\algo{"../official/number-theory/number-theory.cpp"}{discrete_log}{Discrete Logarithm}
+
+%%% Fully tested reliability 5
+\algo{"../official/number-theory/ntt.cpp"}{ntt}{Fast Convolution using Number Theoretic Transform}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%							COMBINATORICS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Combinatorics}
+
+%%% Tested by brute-force
+\algo{../dev/Daniel/combinatorial-generation/set_partitions.cpp}{set_partitions}{Generate Set Partitions}
+
+%%% Tested by brute-force
+\algo{../dev/Daniel/combinatorial-generation/integer_partitions.cpp}{integer_partitions}{Generate Integer Partitions}
+
+%%% Tested by brute-force
+\algo{../dev/Daniel/combinatorial-generation/bitmask_subsets.cpp}{subsets_of_a_subset}{Generate Subsets and Combinations}
+\algo*{../dev/Daniel/combinatorial-generation/bitmask_subsets.cpp}{combinations}{Subset Bitmask Tricks}
+
+%%% NEEDS TESTING
+% \algo{../dev/Daniel/combinatorial-generation/generation.cpp}{parenthesis}{Generate Balanced Parenthesis}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%						DYNAMIC PROGRAMMING
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Dynamic Programming}
+
+%%% Tested and verified reliability 5
+\algo{"../unofficial/Dynamic\ Programming/longest-increasing-subsequence.cpp"}{lis}{Longest Increasing Subsequence}
+
+%%% Tested with reliability 2.
+\algo{"../dev/Daniel/longest-palindrome-substring/palindrome2.cpp"}{lps}{Longest Palindromic Substring}
+
+%%% Tested with reliability 1.
+\algo{"../dev/Daniel/dp/monotonic_queue.cpp"}{monotonic_queue}{Monotonic Queue}
+
+%%% Tested with reliability 1
+\algo{"../dev/Daniel/dp/monotone_convex_hull.cpp"}{monotone_hull}{Convex Hull Trick}
+
+%%% Tested with reliability 1.
+\algo*{"../dev/Daniel/dp/dynamic_convex_hull.cpp"}{dynamic_hull}{Fully Dynamic Convex Hull Trick}
+
+%%% Tested with reliability 1
+\algo{"../dev/Daniel/dp/divide_and_conquer.cpp"}{dc}{Divide and Conquer Optimisation}
+
+%%% Tested with reliability 1.
+\algo{"../dev/Daniel/dp/knuth.cpp"}{knuth}{Knuth's Optimisation}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%							GRAPH ALGORITHMS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Graph Algorithms}
+
+%%% Tested and verified reliability 5
+% \algo{"../unofficial/Graph\ Algorithms/shortest-paths/dijkstra.cpp"}{dijkstra}{Dijkstra's Algorithm}
+
+%%% Tested and verified reliability 5
+\algo{"../unofficial/Graph\ Algorithms/shortest-paths/bellmanford.cpp"}{bellman_ford}{Bellman-Ford Algorithm}
+
+%%% Tested with both Dijkstra and Bellman-Ford
+\algo*{"../unofficial/Graph\ Algorithms/shortest-paths/dijkstra.cpp"}{get_path}{Get Path}
+
+%%% Tested and verified reliability 5
+\algo{"../unofficial/Graph\ Algorithms/Biconnectivity/biconnectivity.cpp"}{biconnectivity}{Articulation Points, Bridges, Biconnected Components and Bridge-Connected Components}
+
+%%% Tested and verified reliability 5
+\algo{"../unofficial/Graph\ Algorithms/Eulerian/eulerian-graph.cpp"}{eulerian}{Eulerian Path and Tour}
+
+%%% Tested and verified reliability 5
+\algo{"../unofficial/Graph\ Algorithms/LCA/lca.cpp"}{lca}{Lowest Common Ancestor and Tree Distances}
+
+%%% Tested and verified reliability 5
+\algo{"../unofficial/Graph\ Algorithms/Max\ Flow/dinic.cpp"}{dinic}{Maximum Flow (Dinic's Algorithm in $\mathcal{O}(V^2 E)$)}
+\algo{"../unofficial/Graph\ Algorithms/Max\ Flow/push_relabel.cc"}{push_relabel}{Maximum Flow (Push Relabel in $\mathcal{O}(V^2 \sqrt{E})$)}
+
+%%% Tested and verified reliability 5
+%\algo{"../unofficial/Graph\ Algorithms/Matchings/max_bipartite_matching_alternating_paths.cpp"}{matching}{Maximum Bipartite Matching}
+\algo{"../unofficial/Graph\ Algorithms/Matchings/max_bipartite_matching_hopcroft_karp.cpp"}{matching}{Maximum Bipartite Matching}
+
+%%% Reliability 1. NEEDS TESTING
+\algo{"../dev/Daniel/max-matching/blossom.cpp"}{matching}{Maximum Matching on a General Graph}
+
+%%% Reliability 1. NEEDS TESTING
+\algo{"../dev/Daniel/stable_matching/stable_matching.cpp"}{stable_matching}{Stable Matching / Stable Marriage Problem}
+
+%%% Tested and verified reliability 5
+\algo{"../unofficial/Graph\ Algorithms/Matchings/hungarian_algorithm.cpp"}{hungarian}{Hungarian Algorithm (Minimum weight bipartite matching)}
+
+%%% Tested and verified reliability 5
+\algo{"../unofficial/Graph\ Algorithms/min-cost-flow/min_cost_flow.cpp"}{min_cost_flow}{Minimum Cost Flow}
+\algo*{"../unofficial/Graph\ Algorithms/min-cost-flow/min_cost_flow.cpp"}{leviticus}{Minimum Cost Flow using Leviticus Algorithm}
+
+%%% Reliability 1.
+\algo{"../dev/Daniel/global_min_cut/global_min_cut.cpp"}{mincut}{Minimum Cut}
+
+%%% Tested and verified reliability 5
+\algo{"../unofficial/Graph\ Algorithms/SCC/SCC.cc"}{scc}{Strongly Connected Components}
+
+%%% Tested and verified reliability 5
+%\algo{"../unofficial/Graph\ Algorithms/topological-sort/topological-sort.cc"}{topsort}{Topological Sort}
+
+%%% Reliability 1.
+\algo{"../dev/Daniel/MMC/mmc.cpp"}{mmc}{Minimum Mean Cycle}
+
+%%% Reliability 1.
+\algo{"../dev/Daniel/arborescence/mca.cpp"}{mca}{Minimum Cost Arborescence}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%					TREE DECOMPOSITION TECHNIQUES
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Tree Decomposition Techniques}
+
+%%% Tested and verified reliability 5
+\algo{"../unofficial/Tree\ Decomposition/heavy_light_decomposition.cpp"}{hld}{Heavy-Light Decomposition}
+
+%%% Tested and verified reliability 5
+\algo{"../unofficial/Tree\ Decomposition/centroid_decomposition.cpp"}{centroid_decomposition}{Centroid Decomposition}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%							LINEAR ALGEBRA
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Linear Algebra}
+
+%%% UNTESTED
+\algo{"../dev/Daniel/linear_algebra/rref.cpp"}{rref}{Reduced Row Echelon Form}
+
+%%% UNTESTED
+\algo{"../dev/Daniel/linear_algebra/linear_diophantine.cpp"}{diophantine_linsolve}{System of Linear Diophantine Equations Solver}
+
+%%% UNTESTED
+\algo{"../dev/Daniel/linear_algebra/fraction_free_linear_solver.cpp"}{fflinsolve}{Fraction Free Integral Linear System Solver}
+
+%%% UNTESTED
+\algo{"../dev/Daniel/linear_algebra/lu_decomposition.cpp"}{lu_decomp}{Floating-Point Linear Solver Using LU-Decomposition}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%							DATA STRUCTURES
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Data Structures}
+
+%%% Tested on lots of problems
+\algo{../dev/Whalanator/FenwickTree/FenwickTreeRangeQueryPointUpdate.cpp}{ft}{Fenwick Tree}
+
+%%% Tested
+\algo*{../dev/Whalanator/FenwickTree/FenwickTree.cpp}{ft}{Fenwick Tree}
+
+%%% Reliability 1
+%\algo{"../dev/Daniel/misof/misof.cpp"}{misof}{Misof Tree (Order statistics interval tree)}
+
+%%% Tested and verified reliability 5
+\algo{"../unofficial/Data\ Structures/RMQ/rmq_query_only.cc"}{st}{Sparse Table for Static Range Minimum Query}
+
+%%% Tested and verified reliability 5.
+\algo{"../unofficial/Data\ Structures/RMQ/dynamic_rmq.cpp"}{rmq}{Segment Tree for Dynamic Range Minimum Query}
+
+%%% Tested and verified reliabilty 5.
+%\algo{"../unofficial/Data\ Structures/segment_tree/segment_tree.cpp"}{lazy_segment_tree}{Recursive Segment Tree with Lazy Propagation}
+%\algo*{"../unofficial/Data\ Structures/segment_tree/segment_tree.cpp"}{range_sum_addition}{Segment Tree for Ranged Sum and Addition}
+\algo{"../dev/Whalanator/SegmentTree/LazyIter/LazyIter2.cpp"}{segment_tree}{Segment Tree with Lazy Propagation}
+\algo{"../dev/Whalanator/SegmentTree/MDIter/MDIter2.cpp"}{mdst}{Multidimensional Segment Tree}
+
+%%% Tested.
+%\algo{"../dev/Whalanator/UnionFind/UnionFind.cpp"}{union_find}{Union Find}
+\algo{"../dev/Daniel/union-find/union_find.cpp"}{union_find}{Union Find}
+
+%%% Reliability 2
+\algo{"../dev/Daniel/dynamic_tree/link_cut_tree.cpp"}{lct}{Link-Cut Tree}
+
+%%% Reliability 2
+\algo{"../dev/Daniel/treap/basic_treap.cpp"}{treap}{Treap}
+
+%%% Reliability 2
+\algo{"../dev/Daniel/implicit_treap/implicit_treap.cpp"}{treap}{Implicit Key Treap (Implicit Cartesian Tree / Rope)}
+
+%%% Tested on basic examples.
+\algo{"../dev/Daniel/gnu_pbds/pbds.cpp"}{prefix_trie}{GNU Policy-Based Data Structures (Prefix Trie, Rope, Order Statistics Tree)}
+\algo*{"../dev/Daniel/gnu_pbds/pbds.cpp"}{prefix_trie_example}{Patricia Trie}
+\algo*{"../dev/Daniel/gnu_pbds/pbds.cpp"}{rope}{Rope}
+\algo*{"../dev/Daniel/gnu_pbds/pbds.cpp"}{rope_example}{Rope}
+\algo*{"../dev/Daniel/gnu_pbds/pbds.cpp"}{ordered_set}{Ordered Set}
+\algo*{"../dev/Daniel/gnu_pbds/pbds.cpp"}{ordered_set_example}{Ordered Set}
+
+%%% NEEDED ::
+% * Fraction
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%							STRING PROCESSING
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{String Processing}
+
+% Tested and verified reliability 5
+\algo{../unofficial/Strings/kmp/kmp.cpp}{kmp}{KMP}
+
+% Tested and verified reliability 5
+\algo{"../unofficial/Strings/z-algorithm/z-algorithm.cpp"}{z}{Z-Algorithm}
+
+% Tested and verified reliability 5
+\algo{"../unofficial/Strings/suffix_tree/suffix-tree.cpp"}{suffix_tree}{Suffix Tree}
+
+% Tested and verified reliability 5
+\algo{"../unofficial/Strings/suffix_automaton/sa.cpp"}{sa}{Suffix Automaton}
+
+% Tested and verified reliability 5
+\algo{"../unofficial/Strings/suffix_array/suffix_array_linear.cpp"}{suffix_array_linear}{Suffix Array ($\mathcal{O}(N)$ and $\mathcal{O}(N \log(N))$)}
+
+% Reliability 1. NEEDS MORE TESTING
+\algo{"../dev/Daniel/aho_corasick/ac.cpp"}{ac}{Aho-Corasick Algorithm}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%							MISCELLANEOUS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Miscellaneous}
+
+%%% UNTESTED
+\algo{"../unofficial/Misc/dates/dates.cpp"}{dates}{Date Conversion}
+
+%%% Tested and verified reliability 5
+\algo{"../unofficial/Graph\ Algorithms/2SAT/2SAT.cc"}{twosat}{2-SATISFIABILITY}
+
+%%% NOT TESTED. TEST THIS
+\algo{"../dev/Daniel/cubic/cubic.cpp"}{cubic}{Cubic Equation Solver}
+
+%%% Tested for accuracy
+\algo{"../unofficial/Misc/custom_hashing/hashing.cpp"}{hashing}{Hashing Custom Types}
+
+%%% Tested and verified reliability 5
+% \algo{"../unofficial/Misc/inversion-index/inversion.cpp"}{inversion_index}{Inversion Index}
+
+%%% Tested and verified reliability 5
+\algo{"../official/misc/roman/roman.cpp"}{roman}{Conversion to and from Roman Numerals}
+
+%%% Tested and verified reliability 5
+\algo{"../unofficial/Misc/josephus/josephus.cpp"}{josephus}{Josephus Problem}
+
+%%% Tested and verified reliability 5
+\algo{"../unofficial/Misc/fft/fft.cpp"}{fft}{Fast Convolution using Fast Fourier Transform}
+
+%%% Verfied on simple example. Assumed reliable from Darcy's code binder. Should test more thoroughly
+\algo{"../unofficial/Misc/numerical_methods/numerical.cpp"}{numerical}{Numerical Integration and Differentiation}
+
+%%% UNTESTED. NEEDS TESTING
+\algo{"../dev/Daniel/simplex/simplex.cpp"}{simplex}{Linear Programming (Simplex Algorithm)}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%								FORMULAS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
+\section{Formulas and Theorems}
+{\fontsize{8}{8}
+
+\textbf{Arithmetic series and powers:} $\sum\limits_{i=1}^n i = \frac{n(n+1)}{2}, \quad \sum\limits_{i=1}^n i^2 = \frac{n(n+1)(2n+1)}{6}, \quad \sum\limits_{i=1}^n i^3 = \frac{n^2(n+1)^2}{4}$ \\
+\textbf{Geometric and arithmetic-geometric series: } $\sum\limits_{i=0}^n c^i = \frac{c^{n+1} - 1}{c-1}, \quad \sum\limits_{i=0}^n ic^i = \frac{nc^{n+2} - (n+1)c^{n+1} + c}{(c-1)^2}$
+
+\disappearingrule
+
+\textbf{Binomial sums: } $\sum\limits_{k=0}^n \binom{r+k}{k} = \binom{r+n+1}{n}, \quad \sum\limits_{k=0}^n \binom{k}{m} = \binom{n+1}{m+1}, \quad \sum\limits_{k=0}^n \binom{r}{k}\binom{s}{n-k} = \binom{r+s}{n},$ \\
+\textbf{Binomial identities: } $\binom{n}{m} \binom{m}{k} = \binom{n}{k} \binom{n-k}{m-k}, \quad \binom{n}{k} = \frac{n}{k} \binom{n - 1}{k - 1}, \quad \binom{n}{k} = \binom{n - 1}{k} + \binom{n - 1}{k - 1}$ \\
+\textbf{Catalan numbers: } \textnormal{Dyck words of length $2n$. } $C_n = \frac{1}{n+1} \binom{2n}{n}, \quad C_{n+1} = \sum_{i=0}^n C_i C_{n-i}, \quad C_0 = 1$ \\
+\textbf{Derangements: } \textnormal{Permutations without fixed points. } $!0 = !1 = 0,\ !n = (n-1)(!(n-1) + !(n-2))$ \\
+\textbf{Stirling numbers of the first kind: } \textnormal{The number of permutations on $n$ elements with $k$ cycles.}
+\begin{center}
+	$\stirling{0}{0} = 1, \quad \stirling{n}{0} = \stirling{0}{n} = 0, \quad \stirling{n}{1} = (n-1)!, \quad \stirling{n}{n} = 1, \quad \stirling{n}{k} = (n-1)\stirling{n-1}{k} + \stirling{n-1}{k-1}$
+\end{center}
+\textbf{Stirling numbers of second kind: } \textnormal{The number of partitions of $n$ elements into $k$ (non-empty) subsets.}
+\begin{center}
+	$\stirlingtwo{0}{0} = 1, \quad \stirlingtwo{n}{0} = \stirlingtwo{0}{n} = 0, \quad \stirlingtwo{n}{k} = k\stirlingtwo{n-1}{k} + \stirlingtwo{n-1}{k-1}, \quad \sum_{k=0}^n \stirlingtwo{n}{k} = B_n$
+\end{center}
+\textbf{Bell numbers: } \textnormal{The number of set partitions of $n$ elements.} $B_{n+1} = \sum\limits_{k=0}^n \binom{n}{k} B_k, \quad B_0 = 1$  \\
+\textbf{$\mathbf{1}^\textnormal{st}$ order Eulerian numbers: } \textnormal{The number of permutations on $n$ elements with $k$ ascents.}
+\begin{center}
+	$\eulerian{n}{0} = \eulerian{n}{n-1} = 1, \eulerian{n}{k} = \eulerian{n}{n-1-k}, \eulerian{n}{k} = (k+1)\eulerian{n-1}{k} + (n-k)\eulerian{n-1}{k-1}, \eulerian{n}{m} = \sum\limits_{k=0}^m \binom{n+1}{k}(m+1-k)^n(-1)^k$,
+\end{center}
+\textbf{$\mathbf{2}^\textnormal{nd}$ order: } \textnormal{Permutations on $\{1,1,...n,n\}$ with $a_j > a_i, a_k$ if $i < j < k$ and $a_i = a_k$ with $m$ ascents.}
+\begin{center}
+	$\euleriantwo{n}{0} = 1, \quad \euleriantwo{n}{n} = 0 \textnormal{ for } n \neq 0, \quad \euleriantwo{n}{m} = (m+1)\euleriantwo{n-1}{m} + (2n-1-m)\euleriantwo{n-1}{m-1}$
+\end{center}
+\textbf{Integer partitions: } $P(x) = \prod\limits_{k=1}^\infty \left(\frac{1}{1-x^k}\right), \quad p(n) = \sum\limits_{k \geq 1} (-1)^{k-1} \left( p\left(n-\frac{k(3k+1)}{2}\right) +p\left(n-\frac{k(3k-1)}{2}\right) \right)$  \\
+\textbf{Restricted partitions: } $p(n,k) = p(n-k,k) + p(n-1,k-1), \quad p(0,0) = 1, \quad p(n,k) = 0, n \leq 0 \textnormal{ or } k \leq 0$
+\begin{flushleft}
+\textbf{Balls in bins: } \textnormal{The number of ways to place $n$ balls into $k$ bins.}
+\end{flushleft}
+\def\arraystretch{1.5}
+\begin{tabularx}{0.49\textwidth}{|c|c|c|Y|}
+	\hline
+	& & \textnormal{\bfseries Identical balls} & \textnormal{\bfseries Distinguishable balls} \\
+	\hline
+	%%% Indistinguishable bins case
+	\multirow{2}{*}{\textnormal{\bfseries Identical bins}}&\textnormal{Empty bins ok} & \centering $\sum\limits_{i=1}^{k} p(n,i)$ & {\centering $\sum\limits_{i=1}^k \stirlingtwo{n}{i}$}  \\ 
+	\cline{2-4}
+	&\textnormal{No empty bins} & \centering $p(n,k)$ & $\stirlingtwo{n}{k}$ \\
+	\hline
+	%%% Distinguishable bins case
+	\multirow{2}{*}{\textnormal{\bfseries Distinguishable bins}}&\textnormal{Empty bins ok} & $\binom{n+k-1}{k-1} = \binom{n+k-1}{n}$ & $k^n$ \\ 
+	\cline{2-4}
+	&\textnormal{No empty bins} & $\binom{n-1}{k-1}$ & $\sum\limits_{i=0}^k (-1)^i \binom{k}{i}(k-i)^n = \stirlingtwo{n}{k} k!$ \\
+	\hline
+	%\multicolumn{4}{l}{\scriptsize{\textbf{Note: }For ordered balls / bins, multiply the identical case by $n!$ or $k!$ respectively.}}
+\end{tabularx}
+
+\disappearingrule
+
+\textbf{Trigonometry: } \textnormal{Sin rule: } $\frac{\sin(\alpha)}{a} = \frac{\sin(\beta)}{b} = \frac{\sin(\gamma)}{c},$ \quad \textnormal{Cosine rule: } $c^2 = a^2 + b^2 - 2ab\cos(\gamma)$ \\
+\textbf{Circle inscribed in triangle: } \textnormal{radius $= \sqrt{\frac{(s-a)(s-b)(s-c)}{s}}$, \quad centre $= \frac{a\vec{v}_a + b\vec{v}_b + c\vec{v}_c}{a+b+c}$, \quad $s = \frac{a+b+c}{2}$} \\
+\textbf{Circumcircle: } \textnormal{radius $ = \frac{abc}{4A}, A = $ area of triangle, centre $ = $ intersection of perpendicular bisectors }  \\
+\textbf{Trig Identities: } $\sin^2(u) = \frac{1}{2}(1-\cos(2u)), \quad \cos^2(u) = \frac{1}{2}(1 + \cos(2u)) $ \\
+$\sin(u) + \sin(v) = 2\sin(\frac{u+v}{2})\cos(\frac{u-v}{2}), \quad \sin(u) - \sin(v) = 2\sin(\frac{u-v}{2})\cos(\frac{u-v}{2})$ \\
+$\cos(u) + \cos(v) = 2\cos(\frac{u+v}{2})\cos(\frac{u-v}{2}), \quad \cos(u) - \cos(v) = -2\sin(\frac{u+v}{2})\sin(\frac{u-v}{2}) $ \\
+$\sin(u)\sin(v) = \frac{1}{2}(\cos(u-v)-\cos(u+v)), \quad \cos(u)\cos(v) = \frac{1}{2}(\cos(u-v)+\cos(u+v))$ \\
+\textbf{Dot and cross product: } $\vec{u} \cdot \vec{v} = \|\vec{u}\| \|\vec{v} \| \cos(\theta), \quad \vec{u} \times \vec{v} = \|\vec{u}\| \|\vec{v} \| \sin(\theta) \mathbf{n}$ \\
+\textbf{Rotation matrix: } $\begin{bmatrix}
+\cos(\theta)       & -\sin(\theta) \\
+\sin(\theta)       & \cos(\theta) \\
+\end{bmatrix}$ \textnormal{(counter-clockwise by $\theta$)}
+
+\disappearingrule
+
+\textbf{Number and sum of divisors: } \textnormal{multiplicative, $\tau(p^k) = k+1,\quad \sigma(p^k) = \frac{p^{k+1}-1}{p-1}$} \\
+\textbf{Linear Diophantine equations: } $a\cdot s + b\cdot t = c$ \textnormal{iff} $\gcd(a,b) | c,$ \quad $(s,t) = (s_0, t_0) + k \cdot \left(\frac{a}{\gcd(a,b)} , -\frac{a}{\gcd(a,b)} \right)$ \\
+\textbf{Euler's Theorem: } \textnormal{If $a$ and $b$ are relatively prime, $a^{\phi(b)} \equiv 1 \mod b$, \quad $a^{p-1} \equiv 1 \mod p$ for prime $p$}  \\
+\textbf{Wilson's Theorem: } \textnormal{$p$ is a prime iff $(p-1)! \equiv -1 \mod p$} \\
+\textbf{Lucas' Theorem: } \textnormal{$\binom{n}{m} = \prod\limits_{i=0}^k \binom{m_i}{n_i} \mod p$ where $m_i, n_i$ are the base $p$ coefficients of $m$ and $n$}  \\
+
+\disappearingrule
+
+\textbf{Pick's Theorem: } $A = i + \frac{b}{2} - 1$, \textnormal{$A = $ area, $i = $ interior lattice points, $b = $ boundary lattice points.}\\
+\textbf{Euler's Formula: } $V - E + F - C = 1$, \textnormal{$V = $ vertices, $E = $ edges, $F = $ faces, $C = $ connected components.}
+\textbf{Cayley's Formula: } \textnormal{A complete graph on $n$ labelled vertices has $n^{n-2}$ spanning trees.}\\
+\textbf{Erd\"os Gallai: } \textnormal{$\{ d_n \}$ is a degree sequence iff $\sum\limits_{i=1}^k d_i$ is even and $\sum\limits_{i=1}^k d_i \leq k(k-1) + \sum\limits_{i=k+1}^n \min(d_i,k)$, $\forall k$}\\
+\textbf{Moser's Circle: } \textnormal{A circle is divided into $\binom{n}{4} + \binom{n}{2} + 1$ pieces by chords connecting $n$ points}\\[1ex]
+\textbf{Burnside's Lemma: } $|X/G| = \frac{1}{|G|} \sum\limits_{g\in G} |X^g|$  \\
+\textbf{M\"obius Inversion Formula: } \textnormal{If }$g(n) = \sum\limits_{d | n} f(d) $ \textnormal{ then } $f(n) = \sum\limits_{d | n} \mu(d) g\left(\frac{n}{d}\right)$ \\
+\textbf{M\"obius Function: } $\mu(n) = \begin{cases}\ 1 & n \textnormal{ is square-free with an even number of prime factors} \\ -1 & n \textnormal{ is square-free with an odd number of prime factors} \\ \ 0 & n \textnormal{ has a squared prime factor}  \end{cases}$
+
+\disappearingrule
+
+\textbf{Usable Chooses: } \textnormal{$\binom{n}{k}$ is safe assuming $50,000,000$ is not TLE. $\binom{28}{k}$ is okay for all $k \leq n$.}  \\
+\begin{tabular}{|c | c | c | c | c | c | c | c | c | c |}
+	\hline
+	$\mathbf{n}$ & $29$ & $30 - 31$ & $32 - 33$ & $34 - 38$ & $39 - 45$ & $46 - 59$ & $60 - 92$ & $93 - 187$ & $188 - 670$ \\
+	\hline
+	 $\mathbf{k}$ & $11$ &  $10$ &  $9$ &  $8$ &  $7$ &  $6$ &  $5$ &  $4$ &  $3$ \\
+	\hline
+\end{tabular}
+
+\textbf{Combinatorial bounds: } $B_{13} = 27,644,437, \quad C_{15} = 9,694,845, \quad p(80) = 15,796,476$
+
+\textbf{Some primes for modding: } $10^9 + 103,\quad 10^9 + 321,\quad 10^9 + 447,\quad 10^9 + 637,\quad 10^9 + 891$
+
+\disappearingrule
+
+\textbf{Konig's theorem: } \textnormal{On a bipartite graph:}\\
+\textnormal{1. The size of the minimum vertex cover is equal to the size of the maximum matching}\\
+\textnormal{2. The size of the minimum edge cover plus the size of maximum matching equals the number of vertices}
+\textnormal{3. The size of the maximum independent set equals the size of the minimum edge cover}
+
+\textbf{Spanning Trees in Complete Bipartite Graphs: } \textnormal{$K_{n,m}$ has $m^{n-1} \times n^{m-1}$ spanning trees}
+}
+\end{document}
